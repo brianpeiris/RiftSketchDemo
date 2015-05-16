@@ -7,7 +7,8 @@ require.config({
   paths: {
     firebase: 'bower_components/firebase/firebase',
     jquery: 'bower_components/jquery/dist/jquery',
-    leap: 'lib/leap-0.6.3',
+    leap: 'bower_components/leapjs/leap-0.6.4',
+    leapjsplugins: 'bower_components/leapjs-plugins/main/leap-plugins-0.1.11pre',
     oauth: 'bower_components/oauth-js/dist/oauth',
     lodash: 'bower_components/lodash/dist/lodash',
     text: 'bower_components/requirejs-text/text',
@@ -27,6 +28,7 @@ require.config({
     firebase: {exports: 'Firebase'},
     jquery: {exports: 'jQuery'},
     leap: {exports: 'Leap'},
+    leapjsplugins: {deps: ['leap']},
     oauth: {exports: 'OAuth'},
     kibo: {exports: 'Kibo'},
     Three: {exports: 'THREE'},
@@ -41,6 +43,7 @@ require([
   'firebase',
   'jquery',
   'leap',
+  'leapjsplugins',
   'oauth',
   'lodash',
   'kibo',
@@ -53,6 +56,7 @@ function (
   Firebase,
   $,
   Leap,
+  leapjsplugins,
   OAuth,
   _,
   Kibo,
@@ -165,19 +169,6 @@ function (
 
     this.handStart = this.handCurrent = null;
     this.modifierPressed = this.shiftPressed = false;
-    Leap.loop({}, function (frame) {
-      if (frame.hands.length) {
-        this.handCurrent = frame;
-        if (this.modifierPressed && this.handStart) {
-          var hand = frame.hands[0];
-          var handTranslation = hand.translation(this.handStart);
-          var factor = this.shiftPressed ? 10 : 100;
-          var offset = Math.round(handTranslation[1] / factor * 1000) / 1000;
-          offsetNumberAndKeepSelection(offset);
-        }
-      }
-      this.previousFrame = frame;
-    }.bind(this));
 
     OAuth.initialize('bnVXi9ZBNKekF-alA1aF7PQEpsU');
     var apiCache = {};
@@ -311,7 +302,6 @@ function (
         if (this.modifierPressed) { return false; }
         var start = this.domTextArea.selectionStart;
         File.recordOriginalNumberAt(this.sketch, start);
-        this.handStart = this.handCurrent;
         this.modifierPressed = true;
         return false;
       }.bind(this));
@@ -357,6 +347,46 @@ function (
           this.seemsUnsupported = !!err;
         }.bind(this)
       );
+
+      Leap.loop({}, function (frame) {
+        var h0 = frame.hands[0]
+        var h1 = frame.hands[1]
+        if (
+          frame.hands.length > 1 &&
+          h0.grabStrength > 0.8 &&
+          h1.grabStrength > 0.8
+        ) {
+          var v0 = new THREE.Vector3();
+          v0.set.apply(v0, h0.palmPosition)
+          var v1 = new THREE.Vector3();
+          v1.set.apply(v1, h1.palmPosition)
+          var dist = v0.distanceTo(v1);
+          if (this.handStart) {
+            var factor = 1;
+            var offset = Math.round((dist - this.handStart) / factor * 1000) / 1000;
+            offsetNumberAndKeepSelection(offset);
+          }
+          else {
+            this.handStart = dist;
+            var start = this.domTextArea.selectionStart;
+            File.recordOriginalNumberAt(this.sketch, start);
+          }
+        }
+        else {
+          this.handStart = null;
+        }
+      }.bind(this));
+
+      Leap.loopController.use('transform', {
+        vr: true,
+        effectiveParent: this.riftSandbox.camera
+      });
+      Leap.loopController.use('boneHand', {
+        scene: this.riftSandbox.scene
+      });
+
+      this.riftSandbox.interceptScene();
+
       if (mode) {
         this.toggleTextArea();
       }

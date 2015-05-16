@@ -6,7 +6,8 @@
     "lodash": "~2.4.1",
     "requirejs-bower": "~2.1.15",
     "requirejs-text": "~2.0.14",
-    "backbone": "~1.1.2"
+    "backbone": "~1.1.2",
+    "leapjs-plugins": "158dbd7fdf6d53d21df515445d68fc0909c1d126"
   },
   "name": "RiftSketch",
   "private": true

@@ -17,6 +17,7 @@ function (
   WebVRManager
 ) {
   'use strict';
+  var mode = window.location.search;
   var BASE_POSITION = new THREE.Vector3(0, 1.5, -2);
   var BASE_ROTATION = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(0, Math.PI, 0), 'YZX');
@@ -48,7 +49,7 @@ function (
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
-      75, this.width / this.height, 1, 10000);
+      75, this.width / this.height, 0.1, 100);
 
     this.controls = new THREE.VRControls(this.camera);
     this.effect = new THREE.VREffect(this.renderer);
@@ -70,7 +71,9 @@ function (
     this.textArea = new TextArea(this.domTextArea);
     this.textArea.object.position.set(0, 1.5, 0);
     this.scene.add(this.textArea.object);
+  };
 
+  constr.prototype.interceptScene = function () {
     var oldAdd = this.scene.add;
     this.scene.add = function (obj) {
       this.sceneStuff.push(obj);
@@ -125,15 +128,17 @@ function (
       this.textArea.update();
       this.controls.update();
 
-      // this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
-      // var rotatedHMDPosition = new THREE.Vector3();
-      // rotatedHMDPosition.copy(this.camera.position);
-      // rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
-      // this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
-      if (!hmd) {
+      if (mode) {
         this.camera.quaternion.multiplyQuaternions(
           BASE_ROTATION, this.camera.quaternion);
         this.camera.position.copy(BASE_POSITION);
+      }
+      else {
+        this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
+        var rotatedHMDPosition = new THREE.Vector3();
+        rotatedHMDPosition.copy(this.camera.position);
+        rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
+        this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
       }
 
       if (this.vrManager.isVRMode()) {
