@@ -124,18 +124,15 @@ function (
     this.vrManager.getHMD().then(function (hmd) {
       this.textArea.update();
       this.controls.update();
-      if (!hmd) {
-        this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
-      }
 
-      if (this.hasVR) {
-        this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
-        var rotatedHMDPosition = new THREE.Vector3();
-        rotatedHMDPosition.copy(this.camera.position);
-        rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
-        this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
-      }
-      else {
+      // this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
+      // var rotatedHMDPosition = new THREE.Vector3();
+      // rotatedHMDPosition.copy(this.camera.position);
+      // rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
+      // this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
+      if (!hmd) {
+        this.camera.quaternion.multiplyQuaternions(
+          BASE_ROTATION, this.camera.quaternion);
         this.camera.position.copy(BASE_POSITION);
       }
 

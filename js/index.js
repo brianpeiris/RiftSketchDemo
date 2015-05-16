@@ -3,12 +3,14 @@
 require.config({
   waitSeconds: 30,
   baseUrl: '',
+  urlArgs: 'bust=' + (new Date()).getTime(),
   paths: {
     firebase: 'bower_components/firebase/firebase',
     jquery: 'bower_components/jquery/dist/jquery',
     leap: 'lib/leap-0.6.3',
     oauth: 'bower_components/oauth-js/dist/oauth',
     lodash: 'bower_components/lodash/dist/lodash',
+    text: 'bower_components/requirejs-text/text',
     kibo: 'lib/kibo',
     Three: 'lib/three',
     VRControls: 'lib/VRControls',
@@ -62,6 +64,8 @@ function (
   'use strict';
 
   var SketchController = function() {
+    var mode = window.location.search;
+
     var setupVideoPassthrough = function () {
       navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
       navigator.getUserMedia(
@@ -93,7 +97,9 @@ function (
         ref = ref.push(
           {contents: File.defaultContents},
           function () {
-            window.location.hash = '#!' + ref.key();
+            if (!mode) {
+              window.location.hash = '#!' + ref.key();
+            }
             loadSketch(ref);
           }
         );
@@ -205,6 +211,10 @@ function (
     };
 
     this.is_editor_visible = true;
+    this.toggleTextArea = function () {
+        this.is_editor_visible = !this.is_editor_visible;
+        this.riftSandbox.toggleTextArea(this.is_editor_visible);
+    };
     this.bindKeyboardShortcuts = function () {
       var kibo = new Kibo(this.domTextArea);
       kibo.down(getShortcut('z'), function () {
@@ -212,8 +222,7 @@ function (
         return false;
       }.bind(this));
       kibo.down(getShortcut('e'), function () {
-        this.is_editor_visible = !this.is_editor_visible;
-        this.riftSandbox.toggleTextArea(this.is_editor_visible);
+        this.toggleTextArea();
         return false;
       }.bind(this));
       kibo.down(getShortcut('u'), function () {
@@ -333,6 +342,9 @@ function (
       $domTextArea.on('blur', function () {
         $domTextArea.focus();
       }.bind(this));
+      $('#viewer').on('click', function () {
+        $domTextArea.focus();
+      }.bind(this));
       $domTextArea.on('keydown', function (e) {
         // prevent VR polyfill from hijacking wasd.
         e.stopPropagation();
@@ -345,6 +357,9 @@ function (
           this.seemsUnsupported = !!err;
         }.bind(this)
       );
+      if (mode) {
+        this.toggleTextArea();
+      }
 
       this.readCode = function (code) {
         this.sketch.contents = code;
