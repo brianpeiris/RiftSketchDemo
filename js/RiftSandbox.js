@@ -128,12 +128,12 @@ function (
       this.textArea.update();
       this.controls.update();
 
-      if (mode) {
+      if (mode || !hmd) {
         this.camera.quaternion.multiplyQuaternions(
           BASE_ROTATION, this.camera.quaternion);
         this.camera.position.copy(BASE_POSITION);
       }
-      else {
+      else if (hmd) {
         this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
         var rotatedHMDPosition = new THREE.Vector3();
         rotatedHMDPosition.copy(this.camera.position);

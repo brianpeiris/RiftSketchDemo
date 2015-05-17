@@ -9,7 +9,6 @@ require.config({
     jquery: 'bower_components/jquery/dist/jquery',
     leap: 'bower_components/leapjs/leap-0.6.4',
     leapjsplugins: 'bower_components/leapjs-plugins/main/leap-plugins-0.1.11pre',
-    oauth: 'bower_components/oauth-js/dist/oauth',
     lodash: 'bower_components/lodash/dist/lodash',
     text: 'bower_components/requirejs-text/text',
     kibo: 'lib/kibo',
@@ -29,7 +28,6 @@ require.config({
     jquery: {exports: 'jQuery'},
     leap: {exports: 'Leap'},
     leapjsplugins: {deps: ['leap']},
-    oauth: {exports: 'OAuth'},
     kibo: {exports: 'Kibo'},
     Three: {exports: 'THREE'},
     WebVRPolyfill: {deps: ['Three']},
@@ -44,7 +42,6 @@ require([
   'jquery',
   'leap',
   'leapjsplugins',
-  'oauth',
   'lodash',
   'kibo',
 
@@ -57,7 +54,6 @@ function (
   $,
   Leap,
   leapjsplugins,
-  OAuth,
   _,
   Kibo,
 
@@ -169,32 +165,6 @@ function (
 
     this.handStart = this.handCurrent = null;
     this.modifierPressed = this.shiftPressed = false;
-
-    OAuth.initialize('bnVXi9ZBNKekF-alA1aF7PQEpsU');
-    var apiCache = {};
-    var api = _.throttle(function (provider, url, data, callback) {
-      var cacheKey = url + JSON.stringify(data);
-      var cacheEntry = apiCache[cacheKey];
-      if (cacheEntry && (Date.now() - cacheEntry.lastCall) < 1000 * 60 * 5) {
-        callback(cacheEntry.data);
-        return;
-      }
-      OAuth.popup(
-        provider,
-        {cache: true}
-      ).done(function(result) {
-        result.get(
-          url,
-          {data: data, cache: true}
-        ).done(function (data) {
-          apiCache[cacheKey] = {
-            lastCall: Date.now(),
-            data: data
-          };
-          callback(data);
-        });
-      });
-    }, 1000);
 
     var getShortcut = function (key) {
       key = key || '';
