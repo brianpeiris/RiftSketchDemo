@@ -197,7 +197,10 @@ function (
         var isLastSelectedLine = (
           !nextLine ||
           nextLine.selectionStart === null);
-        if (isLastSelectedLine && this.isBlinkOff) {
+        if (
+          isLastSelectedLine && this.isBlinkOff ||
+          document.activeElement != this.domTextArea
+        ) {
           continue;
         }
       }

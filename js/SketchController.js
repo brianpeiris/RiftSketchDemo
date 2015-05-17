@@ -1,4 +1,4 @@
-require([
+define([
   'firebase',
   'jquery',
   'leap',
@@ -8,7 +8,11 @@ require([
 
   'js/RiftSandbox',
   'js/File',
-  'js/Sketch'
+  'js/Sketch',
+
+  'text!js/Files/Behaviors.js',
+  'text!js/Files/Boid.js',
+  'text!js/Files/World.js'
 ],
 function (
   Firebase,
@@ -20,10 +24,13 @@ function (
 
   RiftSandbox,
   File,
-  Sketch
+  Sketch,
+
+  Behaviors,
+  Boid,
+  World
 ) {
   'use strict';
-
   var SketchController = function() {
     var mode = window.location.search;
 
@@ -42,35 +49,59 @@ function (
     };
     setupVideoPassthrough();
 
-    var loadSketch = function (ref) {
-      this.sketch = {};
-      this.firebaseRef = ref;
-      ref.on('value', function (data) {
-        this.readCode(data.val().contents);
-      }.bind(this));
+    this.executeCode = function () {
+      var code = this.sketch.getCode();
+      if (!this.riftSandbox) { return; }
+      this.riftSandbox.clearScene();
+      var _sketchLoop;
+      this.riftSandbox.setInfo('');
+      try {
+        /* jshint -W054 */
+        var _sketchFunc = new Function(
+          'scene', 'camera',
+          '"use strict";\n' + code
+        );
+        /* jshint +W054 */
+        _sketchLoop = _sketchFunc(
+          this.riftSandbox.scene, this.riftSandbox.cameraPivot);
+      }
+      catch (err) {
+        this.riftSandbox.setInfo(err.toString());
+      }
+      if (_sketchLoop) {
+        this.sketchLoop = _sketchLoop;
+      }
+    };
+
+    var setupDomTextArea = function (file) {
+      var domTextArea = $('<textarea>').
+        appendTo('body').
+        on('keyup', function (e) {
+          var contents = e.target.value;
+          if (contents === file.contents) { return; }
+          file.contents = contents;
+          this.executeCode();
+        }.bind(this)).
+        on('keydown', function (e) {
+          e.stopPropagation();
+        }).
+        val(file.contents).
+        get(0);
+      this.bindKeyboardShortcuts(domTextArea, file);
+      return domTextArea;
     }.bind(this);
 
     var setupSketch = function () {
-      var sketches_base = 'https://riftsketch2.firebaseio.com/sketches/';
-      var ref;
-      if (!window.location.hash) {
-        ref = new Firebase(sketches_base);
-        ref = ref.push(
-          {contents: File.defaultContents},
-          function () {
-            if (!mode) {
-              window.location.hash = '#!' + ref.key();
-            }
-            loadSketch(ref);
-          }
-        );
-      }
-      else {
-        ref = new Firebase(sketches_base + window.location.hash.substring(2));
-        loadSketch(ref);
-      }
+      this.sketch = new Sketch('', [
+        new File('Behaviors', Behaviors),
+        new File('Boid', Boid),
+        new File('World', World)
+      ]);
+      this.domTextAreas = this.sketch.files.map(setupDomTextArea);
+      this.currentDomTextArea = this.domTextAreas[0];
+      this.currentFile = this.sketch.files[0];
+      this.executeCode();
     }.bind(this);
-    setupSketch();
 
     var mousePos = {x: 0, y: 0};
     window.addEventListener(
@@ -104,24 +135,28 @@ function (
         this.sketchLoop();
       }
       catch (err) {
-        this.riftSandbox.textArea.setInfo(err.toString());
+        this.riftSandbox.setInfo(err.toString());
       }
 
       this.riftSandbox.render();
     };
 
     var spinNumberAndKeepSelection = function (direction, amount) {
-      var start = this.domTextArea.selectionStart;
-      File.spinNumberAt(this.sketch, start, direction, amount);
-      this.writeCode(this.sketch.contents);
-      this.domTextArea.selectionStart = this.domTextArea.selectionEnd = start;
+      var start = this.currentDomTextArea.selectionStart;
+      this.currentFile.spinNumberAt(start, direction, amount);
+      this.currentDomTextArea.value = this.currentFile.contents;
+      this.executeCode();
+      this.currentDomTextArea.selectionStart = (
+        this.currentDomTextArea.selectionEnd = start);
     }.bind(this);
 
     var offsetNumberAndKeepSelection = function (offset) {
-      var start = this.domTextArea.selectionStart;
-      File.offsetOriginalNumber(this.sketch, offset);
-      this.writeCode(this.sketch.contents);
-      this.domTextArea.selectionStart = this.domTextArea.selectionEnd = start;
+      var start = this.currentDomTextArea.selectionStart;
+      this.currentFile.offsetOriginalNumber(offset);
+      this.currentDomTextArea.value = this.currentFile.contents;
+      this.executeCode();
+      this.currentDomTextArea.selectionStart = (
+        this.currentDomTextArea.selectionEnd = start);
     }.bind(this);
 
     this.handStart = this.handCurrent = null;
@@ -134,11 +169,11 @@ function (
 
     this.is_editor_visible = true;
     this.toggleTextArea = function () {
-        this.is_editor_visible = !this.is_editor_visible;
-        this.riftSandbox.toggleTextArea(this.is_editor_visible);
+      this.is_editor_visible = !this.is_editor_visible;
+      this.riftSandbox.toggleTextArea(this.is_editor_visible);
     };
-    this.bindKeyboardShortcuts = function () {
-      var kibo = new Kibo(this.domTextArea);
+    this.bindKeyboardShortcuts = function (domTextArea, file) {
+      var kibo = new Kibo(domTextArea);
       kibo.down(getShortcut('z'), function () {
         this.riftSandbox.controls.zeroSensor();
         return false;
@@ -171,6 +206,16 @@ function (
         spinNumberAndKeepSelection(1, 0.1);
         return false;
       });
+      var getNext = function (arr, item) {
+        return arr[((arr.indexOf(item) + 1) % arr.length)];
+      };
+      kibo.down(getShortcut('right'), function () {
+        this.currentFile = getNext(this.sketch.files, this.currentFile);
+        this.currentDomTextArea = getNext(
+          this.domTextAreas, this.currentDomTextArea);
+        this.currentDomTextArea.focus();
+        return false;
+      }.bind(this));
 
       var MOVEMENT_RATE = 0.01;
       var ROTATION_RATE = 0.01;
@@ -231,8 +276,8 @@ function (
 
       kibo.down(getShortcut(), function () {
         if (this.modifierPressed) { return false; }
-        var start = this.domTextArea.selectionStart;
-        File.recordOriginalNumberAt(this.sketch, start);
+        var start = this.currentDomTextArea.selectionStart;
+        file.recordOriginalNumberAt(start);
         this.modifierPressed = true;
         return false;
       }.bind(this));
@@ -257,23 +302,12 @@ function (
     document.addEventListener('mozfullscreenchange', toggleVrMode, false);
     document.addEventListener('webkitfullscreenchange', toggleVrMode, false);
     $(function () {
-      this.domTextArea = document.querySelector('textarea');
-      this.bindKeyboardShortcuts();
-      var $domTextArea = $(this.domTextArea);
-      $domTextArea.on('blur', function () {
-        $domTextArea.focus();
+      $('body').on('click', function () {
+        this.currentDomTextArea.focus();
       }.bind(this));
-      $('#viewer').on('click', function () {
-        $domTextArea.focus();
-      }.bind(this));
-      $domTextArea.on('keydown', function (e) {
-        // prevent VR polyfill from hijacking wasd.
-        e.stopPropagation();
-      });
-      $domTextArea.focus();
-      this.domTextArea.selectionStart = this.domTextArea.selectionEnd = 0;
+      setupSketch();
       this.riftSandbox = new RiftSandbox(
-        window.innerWidth, window.innerHeight, this.domTextArea,
+        window.innerWidth, window.innerHeight, this.domTextAreas,
         function (err) {
           this.seemsUnsupported = !!err;
         }.bind(this)
@@ -299,8 +333,8 @@ function (
           }
           else {
             this.handStart = dist;
-            var start = this.domTextArea.selectionStart;
-            File.recordOriginalNumberAt(this.sketch, start);
+            var start = this.currentDomTextArea.selectionStart;
+            this.currentFile.recordOriginalNumberAt(start);
           }
         }
         else {
@@ -318,44 +352,11 @@ function (
 
       this.riftSandbox.interceptScene();
 
+      this.executeCode();
+
       if (mode) {
         this.toggleTextArea();
       }
-
-      this.readCode = function (code) {
-        this.sketch.contents = code;
-        this.domTextArea.value = code;
-
-        this.riftSandbox.clearScene();
-        var _sketchLoop;
-        this.riftSandbox.textArea.setInfo('');
-        try {
-          /* jshint -W054 */
-          var _sketchFunc = new Function(
-            'scene', 'camera', 'api',
-            '"use strict";\n' + code
-          );
-          /* jshint +W054 */
-          _sketchLoop = _sketchFunc(
-            this.riftSandbox.scene, this.riftSandbox.cameraPivot, api);
-        }
-        catch (err) {
-          this.riftSandbox.textArea.setInfo(err.toString());
-        }
-        if (_sketchLoop) {
-          this.sketchLoop = _sketchLoop;
-        }
-      }.bind(this);
-
-      this.writeCode = function (code) {
-        this.firebaseRef.set({contents: code});
-      };
-
-      $('#sketchContents').on('keyup', function (e) {
-        var code = e.target.value;
-        if (code === this.sketch.contents) { return; }
-        this.writeCode(code);
-      }.bind(this));
 
       window.addEventListener(
         'resize',
@@ -375,6 +376,6 @@ function (
       this.mainLoop();
     }.bind(this));
   };
-  new SketchController();
+  return SketchController;
 });
 

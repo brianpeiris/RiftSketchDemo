@@ -22,10 +22,10 @@ function (
   var BASE_ROTATION = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(0, Math.PI, 0), 'YZX');
 
-  var constr = function (width, height, domTextArea, callback) {
+  var constr = function (width, height, domTextAreas, callback) {
     this.width = width;
     this.height = height;
-    this.domTextArea = domTextArea;
+    this.domTextAreas = domTextAreas;
     window.HMDRotation = this.HMDRotation = new THREE.Quaternion();
     this.BasePosition = new THREE.Vector3(0, 1.5, -2);
     this.HMDPosition = new THREE.Vector3();
@@ -68,9 +68,16 @@ function (
     ground.rotation.x = -Math.PI / 2;
     this.scene.add(ground);
 
-    this.textArea = new TextArea(this.domTextArea);
-    this.textArea.object.position.set(0, 1.5, 0);
-    this.scene.add(this.textArea.object);
+    this.textAreas = this.domTextAreas.map(function (domTextArea, i) {
+      var textArea = new TextArea(domTextArea);
+      textArea.object.position.copy(BASE_POSITION);
+      textArea.object.rotateOnAxis(
+        new THREE.Vector3(0, 1, 0),
+        Math.PI / 4 * -(i + 1));
+      textArea.object.translateZ(-2.5);
+      this.scene.add(textArea.object);
+      return textArea;
+    }.bind(this));
   };
 
   constr.prototype.interceptScene = function () {
@@ -82,7 +89,15 @@ function (
   };
 
   constr.prototype.toggleTextArea = function (shouldBeVisible) {
-    this.textArea.toggle(shouldBeVisible);
+    this.textAreas.forEach(function (textArea) {
+      textArea.toggle(shouldBeVisible);
+    });
+  };
+
+  constr.prototype.setInfo = function (msg) {
+    this.textAreas.forEach(function (textArea) {
+      textArea.setInfo(msg);
+    });
   };
 
   function angleRangeRad(angle) {
@@ -125,7 +140,7 @@ function (
 
   constr.prototype.render = function () {
     this.vrManager.getHMD().then(function (hmd) {
-      this.textArea.update();
+      this.textAreas.forEach(function (textArea) { textArea.update(); });
       this.controls.update();
 
       if (mode || !hmd) {

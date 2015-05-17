@@ -1,23 +1,17 @@
 define([
-  'text!js/Files/Behaviors.js',
-  'text!js/Files/Boid.js',
-  'text!js/Files/World.js'
 ],
 function (
-  Behaviors,
-  Boid,
-  World
 ) {
   var File = function (name, contents) {
     this.name = name || 'Example';
-    this.contents = contents === undefined ? defaultContents : contents;
-    this.selected = true;
+    this.contents = contents;
+    this.selected = false;
   };
-  File.defaultContents = Behaviors + Boid + World;
-  File.findNumberAt = function (sketch, index) {
-    return sketch.contents.substring(index).match(/-?\d+\.?\d*/)[0];
+  File.prototype.findNumberAt = function (index) {
+    var matches = this.contents.substring(index).match(/-?\d+\.?\d*/)
+    return matches && matches[0];
   };
-  File.spinNumber = function (number, direction, amount) {
+  File.prototype.spinNumber = function (number, direction, amount) {
     if (number.indexOf('.') === -1) {
       return (parseInt(number, 10) + direction * amount).toString();
     }
@@ -25,24 +19,27 @@ function (
       return (parseFloat(number) + direction * amount).toFixed(2);
     }
   };
-  File.spinNumberAt = function (
-    sketch, index, direction, amount, originalNumber
+  File.prototype.spinNumberAt = function (
+    index, direction, amount, originalNumber
   ) {
-    var number = File.findNumberAt(sketch, index);
+    var number = this.findNumberAt(index);
+    if (number === null) { return; }
     originalNumber = originalNumber || number;
-    var newNumber = File.spinNumber(originalNumber, direction, amount);
-    sketch.contents = (
-      sketch.contents.substring(0, index) +
+    var newNumber = this.spinNumber(originalNumber, direction, amount);
+    this.contents = (
+      this.contents.substring(0, index) +
       newNumber +
-      sketch.contents.substring(index + number.length)
+      this.contents.substring(index + number.length)
     );
   };
-  File.recordOriginalNumberAt = function (sketch, index) {
-    File.originalIndex = index;
-    File.originalNumber = File.findNumberAt(sketch, index);
+  File.prototype.recordOriginalNumberAt = function (index) {
+    var number = this.findNumberAt(index)
+    if (number === null) { return; }
+    this.originalIndex = index;
+    this.originalNumber = number;
   };
-  File.offsetOriginalNumber = function (sketch, offset) {
-    File.spinNumberAt(sketch, File.originalIndex, 1, offset, File.originalNumber);
+  File.prototype.offsetOriginalNumber = function (offset) {
+    this.spinNumberAt(this.originalIndex, 1, offset, this.originalNumber);
   };
   return File;
 });
