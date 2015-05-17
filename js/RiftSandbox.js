@@ -1,20 +1,20 @@
 define([
   'Three',
-
-  'TextArea',
-
   'VRControls',
   'VREffect',
   'WebVRPolyfill',
   'WebVRManager',
+
+  'js/TextArea'
 ],
 function (
   THREE,
-  TextArea,
   VRControls,
   VREffect,
   WebVRPolyfill,
-  WebVRManager
+  WebVRManager,
+
+  TextArea
 ) {
   'use strict';
   var mode = window.location.search;
