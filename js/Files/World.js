@@ -17,10 +17,6 @@ for (var i = 0; i < numBoids; i++) {
 }
 
 return function () {
-  scene.remove.apply(
-    scene, scene.children.filter(
-function (x) {return x.name === 'line';}
-));
   for (var i = 0; i < numBoids; i++) {
     var boid = world.boids[i];
     boid.step();
