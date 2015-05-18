@@ -80,10 +80,10 @@ function (
           var contents = e.target.value;
           if (contents === file.contents) { return; }
           file.contents = contents;
-          this.executeCode();
+          // this.executeCode();
         }.bind(this)).
         on('keydown', function (e) {
-          e.stopPropagation();
+          // e.stopPropagation();
         }).
         val(file.contents).
         get(0);
