@@ -2,6 +2,7 @@
 var Boid = function (world) {
   this.world = world;
   this.behaviors = [
+    // moveBehavior,
     // flockingBehavior
   ];
   var color = new t3.Color();
