@@ -213,7 +213,7 @@ function (
         this.currentFile = getNext(this.sketch.files, this.currentFile);
         this.currentDomTextArea = getNext(
           this.domTextAreas, this.currentDomTextArea);
-        this.currentDomTextArea.focus();
+        // this.currentDomTextArea.focus();
         return false;
       }.bind(this));
 
@@ -303,7 +303,7 @@ function (
     document.addEventListener('webkitfullscreenchange', toggleVrMode, false);
     $(function () {
       $('body').on('click', function () {
-        this.currentDomTextArea.focus();
+        // this.currentDomTextArea.focus();
       }.bind(this));
       setupSketch();
       this.riftSandbox = new RiftSandbox(
