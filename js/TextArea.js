@@ -38,6 +38,12 @@ function (
       new THREE.MeshBasicMaterial(textAreaMat));
     this.object.rotation.y = Math.PI;
 
+    this.grabHandle = new THREE.Mesh(
+      new THREE.BoxGeometry(0.15, 0.15, 0.15),
+      new THREE.MeshLambertMaterial({color: 'red'}));
+    this.grabHandle.position.set(0.8, -1.2, 0);
+    this.object.add(this.grabHandle);
+
     this.setupInfoPane();
 
     this.lastUpdate = Date.now();

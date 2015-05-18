@@ -313,42 +313,44 @@ function (
         }.bind(this)
       );
 
-      Leap.loop({}, function (frame) {
-        var h0 = frame.hands[0]
-        var h1 = frame.hands[1]
-        if (
-          frame.hands.length > 1 &&
-          h0.grabStrength > 0.8 &&
-          h1.grabStrength > 0.8
-        ) {
-          var v0 = new THREE.Vector3();
-          v0.set.apply(v0, h0.palmPosition)
-          var v1 = new THREE.Vector3();
-          v1.set.apply(v1, h1.palmPosition)
-          var dist = v0.distanceTo(v1);
-          if (this.handStart) {
-            var factor = 1;
-            var offset = Math.round((dist - this.handStart) / factor * 1000) / 1000;
-            offsetNumberAndKeepSelection(offset);
+      if (!mode) {
+        Leap.loop({}, function (frame) {
+          var h0 = frame.hands[0]
+          var h1 = frame.hands[1]
+          if (
+            frame.hands.length > 1 &&
+            h0.grabStrength > 0.8 &&
+            h1.grabStrength > 0.8
+          ) {
+            var v0 = new THREE.Vector3();
+            v0.set.apply(v0, h0.palmPosition)
+            var v1 = new THREE.Vector3();
+            v1.set.apply(v1, h1.palmPosition)
+            var dist = v0.distanceTo(v1);
+            if (this.handStart) {
+              var factor = 1;
+              var offset = Math.round((dist - this.handStart) / factor * 1000) / 1000;
+              offsetNumberAndKeepSelection(offset);
+            }
+            else {
+              this.handStart = dist;
+              var start = this.currentDomTextArea.selectionStart;
+              this.currentFile.recordOriginalNumberAt(start);
+            }
           }
           else {
-            this.handStart = dist;
-            var start = this.currentDomTextArea.selectionStart;
-            this.currentFile.recordOriginalNumberAt(start);
+            this.handStart = null;
           }
-        }
-        else {
-          this.handStart = null;
-        }
-      }.bind(this));
+        }.bind(this));
 
-      Leap.loopController.use('transform', {
-        vr: true,
-        effectiveParent: this.riftSandbox.camera
-      });
-      Leap.loopController.use('boneHand', {
-        scene: this.riftSandbox.scene
-      });
+        Leap.loopController.use('transform', {
+          vr: true,
+          effectiveParent: this.riftSandbox.camera
+        });
+        Leap.loopController.use('boneHand', {
+          scene: this.riftSandbox.scene
+        });
+      }
 
       this.riftSandbox.interceptScene();
 

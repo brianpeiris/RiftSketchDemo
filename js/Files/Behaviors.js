@@ -24,7 +24,7 @@ var flockingBehavior = function (
       otherBoid);
     q.conjugate();
     boid.obj.quaternion.slerp(
-      q, 0.01
+      q, 0.2
     );
   };
 
