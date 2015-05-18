@@ -1,18 +1,18 @@
 define([
   'Three',
-  'VRControls',
   'VREffect',
   'WebVRPolyfill',
   'WebVRManager',
+  'OrbitControls',
 
   'js/TextArea'
 ],
 function (
   THREE,
-  VRControls,
   VREffect,
   WebVRPolyfill,
   WebVRManager,
+  OrbitControls,
 
   TextArea
 ) {
@@ -50,8 +50,12 @@ function (
 
     this.camera = new THREE.PerspectiveCamera(
       75, this.width / this.height, 0.1, 100);
+    this.camera.position.copy(BASE_POSITION);
 
-    this.controls = new THREE.VRControls(this.camera);
+    this.controls = new THREE.OrbitControls(this.camera);
+    this.controls.target = new THREE.Vector3(0, 1.5, 0);
+    this.controls.damping = 0.2;
+    this.controls.update();
     this.effect = new THREE.VREffect(this.renderer);
     this.effect.setSize(this.width, this.height);
 
@@ -141,19 +145,19 @@ function (
   constr.prototype.render = function () {
     this.vrManager.getHMD().then(function (hmd) {
       this.textAreas.forEach(function (textArea) { textArea.update(); });
-      this.controls.update();
+      // this.controls.update();
 
       if (mode || !hmd) {
-        this.camera.quaternion.multiplyQuaternions(
-          BASE_ROTATION, this.camera.quaternion);
-        this.camera.position.copy(BASE_POSITION);
+        // this.camera.quaternion.multiplyQuaternions(
+        //   BASE_ROTATION, this.camera.quaternion);
+        // this.camera.position.copy(BASE_POSITION);
       }
       else if (hmd) {
-        this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
-        var rotatedHMDPosition = new THREE.Vector3();
-        rotatedHMDPosition.copy(this.camera.position);
-        rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
-        this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
+        // this.camera.quaternion.multiplyQuaternions(BASE_ROTATION, this.camera.quaternion);
+        // var rotatedHMDPosition = new THREE.Vector3();
+        // rotatedHMDPosition.copy(this.camera.position);
+        // rotatedHMDPosition.applyQuaternion(BASE_ROTATION);
+        // this.camera.position.copy(BASE_POSITION).add(rotatedHMDPosition);
       }
 
       if (this.vrManager.isVRMode()) {

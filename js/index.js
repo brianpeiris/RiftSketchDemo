@@ -14,6 +14,7 @@ require.config({
 
     kibo: 'lib/kibo',
     Three: 'lib/three',
+    OrbitControls: 'lib/OrbitControls',
     VRControls: 'lib/VRControls',
     VREffect: 'lib/VREffect',
     WebVRPolyfill: 'lib/webvr-polyfill',
@@ -27,6 +28,7 @@ require.config({
 
     kibo: {exports: 'Kibo'},
     Three: {exports: 'THREE'},
+    OrbitControls: {deps: ['Three']},
     WebVRPolyfill: {deps: ['Three']},
     VRControls: {deps: ['Three']},
     VREffect: {deps: ['Three']},
