@@ -23,8 +23,11 @@ var flockingBehavior = function (
     var q = getLookAtQuaternion(
       otherBoid);
     q.conjugate();
+
+    var SEPARATION = 0.9;
+
     boid.obj.quaternion.slerp(
-      q, 0.2
+      q, SEPARATION
     );
   };
 
