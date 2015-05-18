@@ -3,7 +3,7 @@ var Boid = function (world) {
   this.world = world;
   this.behaviors = [
     // randomRotationBehavior,
-    moveBehavior,
+    // moveBehavior,
     flockingBehavior
   ];
   var color = new t3.Color();
@@ -23,11 +23,6 @@ var Boid = function (world) {
     (Math.random() - 0.5) * 1 + 1.5,
     (Math.random() - 0.5) * 1
   );
-  // boid.rotation.set(
-  //   (Math.random() - 0.5) * 2 * Math.PI,
-  //   (Math.random() - 0.5) * 2 * Math.PI,
-  //   (Math.random() - 0.5) * 2 * Math.PI
-  // );
   scene.add(boid);
   this.obj = boid;
 };

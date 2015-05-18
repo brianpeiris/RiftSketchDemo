@@ -9,7 +9,7 @@ scene.add(new t3.AmbientLight(0xaaaaaa));
 var world = {
   boids: []
 };
-var numBoids = 50;
+var numBoids = 5;
 
 for (var i = 0; i < numBoids; i++) {
   var boid =  new Boid(world);
