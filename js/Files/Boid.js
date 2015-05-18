@@ -2,9 +2,7 @@
 var Boid = function (world) {
   this.world = world;
   this.behaviors = [
-    // randomRotationBehavior,
-    // moveBehavior,
-    flockingBehavior
+    // flockingBehavior
   ];
   var color = new t3.Color();
   color.setHSL(Math.random(), 1, 0.5);

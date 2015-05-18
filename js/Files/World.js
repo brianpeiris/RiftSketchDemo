@@ -9,15 +9,16 @@ scene.add(new t3.AmbientLight(0xaaaaaa));
 var world = {
   boids: []
 };
-var numBoids = 5;
 
-for (var i = 0; i < numBoids; i++) {
+var NUM_BOIDS = 5;
+
+for (var i = 0; i < NUM_BOIDS; i++) {
   var boid =  new Boid(world);
   world.boids.push(boid);
 }
 
 return function () {
-  for (var i = 0; i < numBoids; i++) {
+  for (var i = 0; i < NUM_BOIDS; i++) {
     var boid = world.boids[i];
     boid.step();
   }
