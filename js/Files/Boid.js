@@ -1,4 +1,3 @@
-
 var Boid = function (world) {
   this.world = world;
   this.behaviors = [
@@ -30,5 +29,3 @@ Boid.prototype.step = function () {
     behavior(this, this.world);
   }.bind(this));
 };
-
-

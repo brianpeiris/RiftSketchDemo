@@ -23,4 +23,3 @@ return function () {
     boid.step();
   }
 };
-
