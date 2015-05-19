@@ -70,14 +70,21 @@ function (
 
     this.textAreas = this.domTextAreas.map(function (domTextArea, i) {
       var textArea = new TextArea(domTextArea);
+      this.scene.add(textArea.object);
+      return textArea;
+    }.bind(this));
+    this.resetTextAreas();
+  };
+
+  constr.prototype.resetTextAreas = function () {
+    this.textAreas.forEach(function(textArea, i) {
       textArea.object.position.copy(BASE_POSITION);
+      textArea.object.rotation.set(0, Math.PI, 0);
       textArea.object.rotateOnAxis(
         new THREE.Vector3(0, 1, 0),
         Math.PI / 4 * -(i + 1));
       textArea.object.translateZ(-2.5);
-      this.scene.add(textArea.object);
-      return textArea;
-    }.bind(this));
+    });
   };
 
   constr.prototype.interceptScene = function () {

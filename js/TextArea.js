@@ -40,7 +40,7 @@ function (
 
     this.grabHandle = new THREE.Mesh(
       new THREE.BoxGeometry(0.15, 0.15, 0.15),
-      new THREE.MeshLambertMaterial({color: 'red'}));
+      new THREE.MeshLambertMaterial({color: 'green'}));
     this.grabHandle.position.set(0.8, -1.2, 0);
     this.object.add(this.grabHandle);
 

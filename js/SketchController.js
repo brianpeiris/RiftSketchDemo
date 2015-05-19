@@ -99,6 +99,7 @@ function (
       ]);
       this.domTextAreas = this.sketch.files.map(setupDomTextArea);
       this.currentDomTextArea = this.domTextAreas[0];
+      this.currentDomTextArea.focus();
       this.currentFile = this.sketch.files[0];
       this.executeCode();
     }.bind(this);
@@ -160,6 +161,7 @@ function (
     }.bind(this);
 
     this.handStart = this.handCurrent = null;
+    this.movingEditor = null;
     this.modifierPressed = this.shiftPressed = false;
 
     var getShortcut = function (key) {
@@ -214,6 +216,10 @@ function (
         this.currentDomTextArea = getNext(
           this.domTextAreas, this.currentDomTextArea);
         this.currentDomTextArea.focus();
+        return false;
+      }.bind(this));
+      kibo.down(getShortcut('t'), function () {
+        this.riftSandbox.resetTextAreas();
         return false;
       }.bind(this));
 
@@ -314,6 +320,8 @@ function (
       );
 
       if (!mode) {
+        var raycaster = new THREE.Raycaster();
+        var grabHandles = _(this.riftSandbox.textAreas).pluck('grabHandle').value();
         Leap.loop({}, function (frame) {
           var h0 = frame.hands[0]
           var h1 = frame.hands[1]
@@ -340,6 +348,36 @@ function (
           }
           else {
             this.handStart = null;
+            if (h0) {
+              var palmPos = new THREE.Vector3();
+              palmPos.set.apply(palmPos, h0.palmPosition);
+              var camPos = this.riftSandbox.camera.position;
+
+              if (this.movingEditor && h0.grabStrength > 0.8) {
+                this.movingEditor.position.copy(palmPos);
+                this.movingEditor.lookAt(camPos);
+                this.movingEditor.translateZ(-2.5);
+              }
+
+              var direction = new THREE.Vector3();
+              direction.copy(palmPos);
+              direction.sub(camPos);
+              direction.normalize();
+              raycaster.set(camPos, direction);
+
+              var intersections = raycaster.intersectObjects(grabHandles);
+              if (intersections.length) {
+                var grabHandle = intersections[0].object;
+                grabHandles.forEach(function (obj) {
+                    obj.material.color.setHSL(0.5, 0.25, 0.5);
+                });
+                grabHandle.material.color.setHSL(1, 1, 0.5);
+                this.movingEditor = grabHandle.parent;
+              }
+            }
+            else {
+              this.movingEditor = null;
+            }
           }
         }.bind(this));
 
