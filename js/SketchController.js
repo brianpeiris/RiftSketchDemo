@@ -47,7 +47,7 @@ function (
         }
       );
     };
-    setupVideoPassthrough();
+    // setupVideoPassthrough();
 
     this.executeCode = function () {
       var code = this.sketch.getCode();
