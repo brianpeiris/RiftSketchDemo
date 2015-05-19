@@ -47,7 +47,7 @@ function (
         }
       );
     };
-    setupVideoPassthrough();
+    // setupVideoPassthrough();
 
     this.executeCode = function () {
       var code = this.sketch.getCode();
@@ -63,7 +63,7 @@ function (
         );
         /* jshint +W054 */
         _sketchLoop = _sketchFunc(
-          this.riftSandbox.scene, this.riftSandbox.cameraPivot);
+          this.riftSandbox.scene, this.riftSandbox.camera);
       }
       catch (err) {
         this.riftSandbox.setInfo(err.toString());
@@ -328,8 +328,8 @@ function (
             v1.set.apply(v1, h1.palmPosition)
             var dist = v0.distanceTo(v1);
             if (this.handStart) {
-              var factor = 1;
-              var offset = Math.round((dist - this.handStart) / factor * 1000) / 1000;
+              var factor = 5;
+              var offset = Math.round((dist - this.handStart) * factor * 1000) / 1000;
               offsetNumberAndKeepSelection(offset);
             }
             else {

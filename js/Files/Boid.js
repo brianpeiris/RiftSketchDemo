@@ -2,7 +2,6 @@
 var Boid = function (world) {
   this.world = world;
   this.behaviors = [
-    // randomRotationBehavior,
     moveBehavior,
     flockingBehavior
   ];
@@ -18,16 +17,6 @@ var Boid = function (world) {
   var boid = new t3.Object3D();
   boid.add(this.visual);
   boid.scale.setZ(2.5);
-  boid.position.set(
-    (Math.random() - 0.5) * 1 + 0,
-    (Math.random() - 0.5) * 1 + 1.5,
-    (Math.random() - 0.5) * 1
-  );
-  // boid.rotation.set(
-  //   (Math.random() - 0.5) * 2 * Math.PI,
-  //   (Math.random() - 0.5) * 2 * Math.PI,
-  //   (Math.random() - 0.5) * 2 * Math.PI
-  // );
   scene.add(boid);
   this.obj = boid;
 };

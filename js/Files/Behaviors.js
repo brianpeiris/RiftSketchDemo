@@ -60,21 +60,6 @@ var flockingBehavior = function (
   });
 };
 
-var randomRotationBehavior = function (boid) {
-  boid.obj.rotateOnAxis(
-    new t3.Vector3(1, 0, 0),
-    (Math.random() - 0.5) / 5
-  );
-  boid.obj.rotateOnAxis(
-    new t3.Vector3(0, 1, 0),
-    (Math.random() - 0.5) / 5
-  );
-  boid.obj.rotateOnAxis(
-    new t3.Vector3(0, 0, 1),
-    (Math.random() - 0.5) / 5
-  );
-};
-
 var moveBehavior = function (boid) {
-  boid.obj.translateZ(0.01);
+  // boid.obj.translateZ(0.001);
 };
